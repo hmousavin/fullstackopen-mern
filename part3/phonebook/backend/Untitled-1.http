@@ -1,0 +1,18 @@
+# delete http://localhost:3001/api/persons/14
+
+# POST http://localhost:3001/api/persons
+# content-type: application/json
+
+# {
+#     "name": "abbass",
+#     "number": 110
+# }
+
+# GET http://localhost:3001/info
+
+# GET http://localhost:3001/api/persons
+
+# GET http://localhost:3001/api/persons/1
+
+
+GET render-test-jom8.onrender.com:10000/info
