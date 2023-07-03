@@ -1,10 +1,14 @@
+/* eslint-disable no-undef */
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const corsOptions = {
-    origin:'*', 
-    credentials:true, // access-control-allow-credentials:true
-    optionSuccessStatus:200,
+    origin: '*', 
+    credentials: true,
+    optionSuccessStatus: 200,
  }
 
 const requestLogger = (request, response, next) => {
@@ -19,12 +23,6 @@ const unknownEndpoint = (request, response) => {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(requestLogger);
-
-const errorHandler = (error, request, response, next) => {
-    console.warn(error.message);
-    next(error);
-}
-app.use(errorHandler)
 
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
@@ -78,36 +76,33 @@ app.delete('/api/persons/:id', (request, response) => {
                });
 });
 
-app.post('/api/persons/', (request, response) => {
+app.post('/api/persons/', (request, response, next) => {
     const {name, number} = request.body;
 
     if (name == undefined || number == undefined)
         response.status(400).json({ 
             error: 'invalid name or number'
         });
-
     
     new PersonModel({
-        name: name,
+        name:   name,
         number: number
     })
     .save()
-    .then(result => {
-        return response.status(200).end();
-    });
+    .then(savedPerson => {
+        response.json(savedPerson.toJSON())
+    })
+    .catch(error => next(error));
 });
 
-app.put('/api/persons/:id', (request, response) => {
+app.put('/api/persons/:id', (request, response, next) => {
     const {id, number} = request.body;
 
-    PersonModel.findByIdAndUpdate(id, {number: number})
-               .then(result => {
-                    response.status(result ? 200 : 404).end();
+    PersonModel.findByIdAndUpdate(id, {number: number}, {runValidators: true})
+               .then(updatedPerson => {
+                    response.json(updatedPerson.toJSON())
                })
-               .catch(err => {
-                    console.warn(err);
-                    response.status(500).end();
-               });
+               .catch(error => next(error));
 });
 
 let numberOfRequestsReceived = 0;
@@ -116,6 +111,20 @@ app.get('/info', (request, response) => {
 });
 
 app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError' && error.kind == 'ObjectId') {
+      return response.status(400).send({ error: 'malformatted id' })
+    }  else if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
+    }
+  
+    next(error)
+}
+  
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
