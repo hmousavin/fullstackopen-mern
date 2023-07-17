@@ -143,7 +143,6 @@ describe('most likes', () => {
     ]
     
     test('when give a list of blogs, return the author with most likes', () => {
-debugger        
         expect(listHelper.mostLikes(listOfBlogs)).toEqual({'author': 'author2', 'likes': 305});
     })
 })
