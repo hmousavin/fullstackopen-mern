@@ -1,7 +1,3 @@
-// TODO step1: test GET api/blogs using promises 
-/* TODO step2: Once the test is finished, refactor the route handler 
-               to use the async/await syntax instead of promises. */
-
 const mongoose = require('mongoose')
 
 const supertest = require('supertest')
@@ -12,29 +8,61 @@ const api = supertest(app)
 const Blog = require('../models/blog')
 const helper = require('./test_helper')
 
-beforeEach(() => {
-    Blog.deleteMany({})
-    Blog.insertMany(helper.initialBlogs);
+beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs);
 })
 
-test('blogs are returned as json', () => {
-    api.get('/api/blogs')
-       .expect(200)
-       .expect('Content-Type', '/application\/json')
-}, 5000)
+test('blogs are returned as json', async () => {
+    await api.get('/api/blogs')
+             .expect(200)
+             .expect('Content-Type', 'application\/json; charset=utf-8')
+}, 500)
 
-test('all blogs are returned', () => {
-    api.get('/api/blogs').then((response) => {
-        expect(response).toHaveLength(helper.initialBlogs.length)
-    })
-}, 5000)
+test('blogs have a property, called "id" not "_id"', async () => {
+    const response = await api.get('/api/blogs');
+    response.body.forEach((blog) => {
+        expect(blog.id).toBeDefined();
+    });
+}, 500)
 
-test('blogs have a property, called _id', () => {
-    api.get('/api/blogs').then((response) => {        
-        expect(response.body[0]._id2).toBeDefined()
-    })
-}, 5000)
+test('a valid blog post can be added', async () => {
+    const newPost = {
+        "title": "title100",
+        "author": "author100",
+        "url": "http://www.some_url.domain/page100.html",
+        "likes": 100
+    }
+    
+    const response = await api.post('/api/blogs', newPost);
+    expect(response.status).toBe(201)
+    expect(JSON.parse(response.text).v).toBe(0);
+}, 500)
 
-afterAll(() => {
-    mongoose.connection.close()
+test('a post without likes property, could be added with default, zero likes', async () => {
+    const newPost = {
+        "title": "title200",
+        "author": "author200",
+        "url": "http://www.some_url.domain/page200.html",
+    }
+    
+    await api.post('/api/blogs').send(newPost);
+
+    const allBlogs = await helper.blogsInDb()
+    expect(allBlogs.find(b => b.title == "title200").likes).toBe(0)
+}, 500)
+
+test('without a title, any new post is rejected with bad-request', async () => {
+    const newPost = {
+        "author": "author200",
+        "url": "http://www.some_url.domain/page200.html",
+        "likes": 10
+    }
+    
+    const response = await api.post('/api/blogs').send(newPost);
+    expect(response.status).toBe(400)
+}, 500)
+
+afterAll(async () => {
+    await mongoose.connection.close()
 })

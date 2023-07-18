@@ -17,6 +17,7 @@ const initialBlogs = [
 
 beforeEach(() => {
     Blog.deleteMany({})
+    
     let blogObject = new Blog(initialBlogs[0])
     blogObject.save()
 
@@ -24,6 +25,11 @@ beforeEach(() => {
     blogObject.save()
 })
 
+const blogsInDb = async () => {
+    const blogs = await Blog.find({})
+    return blogs.map(blog => blog.toJSON())
+}
+
 module.exports = {
-    initialBlogs
+    initialBlogs, blogsInDb
 }
