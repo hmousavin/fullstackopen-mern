@@ -6,7 +6,7 @@ const app = require('../app')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
-const helper = require('./test_helper')
+const helper = require('../test_helpers/blogs')
 
 beforeEach(async () => {
     await Blog.deleteMany({})
@@ -37,9 +37,9 @@ describe('making new blog post', () => {
             "likes": 100
         }
         
-        const response = await api.post('/api/blogs', newPost);
+        const response = await api.post('/api/blogs', newPost)
         expect(response.status).toBe(201)
-        expect(JSON.parse(response.text).v).toBe(0);
+        expect(JSON.parse(response.text).v).toBe(0)
     }, 500)
     
     test('a post without likes property, could be added with default, zero likes', async () => {
