@@ -4,12 +4,10 @@ const initialUsers = [
     {
         "username": "alex563475",
         "name": "alex",
-        "id": "5dca784c471be1493ca066a1f966e707"
     },
     {
         "username": "michael7948",
         "name": "michael",
-        "id": "bff9b0f89965a3e3afc87c8886713425"
     }
 ]
 

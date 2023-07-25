@@ -17,20 +17,16 @@ usersRouter.post('/', [
 ], async (req, res) => {
   const result = validationResult(req)
 
-  if(result.errors[0])
+  if(result.errors[0]) // !result.errors.isEmpty()
     return res.status(400).send(result.errors[0].msg)
 
   try {
-    const existingUser = await User.findOne({ username: req.body.username });
-    if (existingUser) {
-      return res.status(400).send('this username is already reserved');
-    }
-
     const user = new User(req.body)
     
     const salt = 10
     user.password = await bcrypt.hash(user.password, salt)
   
+    let validationError = await user.validate()
     const api_result = await user.save()
     return res.status(201).json(api_result).end()
   } 
