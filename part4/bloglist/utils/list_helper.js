@@ -1,54 +1,49 @@
-const dummy = (blogs) => {
-    return 1;
-}
-
 const totalLikes = (blogs) => {
-    if (Array.isArray(blogs)) 
-        return blogs.reduce((totalLikes, element) => totalLikes + element.likes, 0);
-     
-    return 0;
-}
+    return blogs.length === 0
+    ? 0
+    : blogs.reduce((sum, blog) => sum + blog.likes, 0)
+  }
 
 const favoriteBlog = (blogs) => {
-    if (Array.isArray(blogs)) {
-        const maxNumberOflike = Math.max(...(blogs.map(b => b.likes)));
-        return blogs.find(b => b.likes == maxNumberOflike);
-    }
-    
-    return undefined;
+    return blogs.length === 0
+    ? {}
+    : blogs.reduce((maxLikes, blog) => blog.likes > maxLikes ? blog.likes : maxLikes, blogs[0].likes)
 }
 
 const mostBlogs = (blogs) => {
-    if (Array.isArray(blogs)) {
-        const authorsWithTotalBlogs = blogs.map(function(e) { 
-            return {
-                'author': e.author,
-                'blogs': blogs.filter(element => element.author == e.author).length
-            }
-        });
-        const mostBlogs = Math.max(...authorsWithTotalBlogs.map(e => e.blogs));
-        return authorsWithTotalBlogs.find(e => e.blogs == mostBlogs);
+    if (blogs.length === 0) {
+        return {}
+    } else {
+        let authorCounts = blogs.reduce((authorCount, blog) => {
+            authorCount[blog.author] = (authorCount[blog.author] || 0) + 1
+            return authorCount
+        }, {})
+        let maxCount = Math.max(...Object.values(authorCounts))
+        let mostFrequent = Object.keys(authorCounts).filter(author => authorCounts[author] === maxCount)
+        return {
+            author: mostFrequent[0],
+            blogs: maxCount
+        }
     }
-    
-    return undefined;
 }
 
 const mostLikes = (blogs) => {
-    if (Array.isArray(blogs)) {
-        const authorsWithTotalLikes = blogs.map(function(e) { 
-            return {
-                'author': e.author,
-                'likes': blogs.filter(element => element.author == e.author)
-                              .reduce((acc, element) => acc + element.likes, 0)
-            }
-        })
-        const mostLikes = Math.max(...authorsWithTotalLikes.map(e => e.likes));
-        return authorsWithTotalLikes.find(e => e.likes == mostLikes);
+    if (blogs.length === 0) {
+        return {}
+    } else {
+        let likesCounts = blogs.reduce((likesCount, blog) => {
+            likesCount[blog.author] = (likesCount[blog.author] || 0) + blog.likes
+            return likesCount
+        }, {})
+        let maxCount = Math.max(...Object.values(likesCounts))
+        let mostLiked = Object.keys(likesCounts).filter(author => likesCounts[author] === maxCount)
+        return {
+            author: mostLiked[0],
+            likes: maxCount
+        }
     }
-
-    return undefined;
 }
 
 module.exports = {
-    dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes
+    totalLikes, favoriteBlog, mostBlogs, mostLikes
 }

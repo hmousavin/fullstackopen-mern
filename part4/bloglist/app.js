@@ -1,33 +1,47 @@
+const config = require('./utils/config')
 const express = require('express')
+require('express-async-errors')
+const bodyParser = require('body-parser')
+const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
-const blogsRouter = require('./controllers/blogs')
+const logger = require('./utils/logger')
+const blogRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
-const { info, error } = require('./utils/logger')
-const { MONGODB_URI } = require('./utils/config')
-const { requestLogger, unknownEndpoint, errorHandler } = require('./utils/middleware')
-
+const loginRouter = require('./controllers/login')
+const middleware = require('./utils/middleware')
 const mongoose = require('mongoose')
-mongoose.set('strictQuery', false)
-const connectToDb = async () => {
-    try {
-        await mongoose.connect(MONGODB_URI)
-        info('connected to MongoDB')
-    } catch (err){
-        error('error connecting to MongoDB:', err.message)
-    }
-}
-connectToDb()
 
+const url = config.MONGODB_URI
+logger.info('connecting to', url)
+
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    logger.info('connected to MongoDB')
+  })
+  .catch((error) => {
+    logger.info('error connecting to MongoDB:', error.message)
+  })
+
+morgan.token('body', function (req) { return JSON.stringify(req.body) })
+
+app.use(bodyParser.json())
 app.use(cors())
-app.use(express.static('build'))
-app.use(express.json())
-app.use(requestLogger)
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.use('/api/blogs', blogsRouter)
+app.use('/api/login', loginRouter)
 app.use('/api/users', usersRouter)
 
-app.use(unknownEndpoint)
-app.use(errorHandler);
+if (process.env.NODE_ENV === 'test') {
+  const testingRouter = require('./controllers/testing')
+  app.use('/api/testing', testingRouter)
+}
+
+app.use(middleware.tokenExtractor)
+app.use(middleware.tokenValidator)
+
+app.use('/api/blogs', blogRouter)
+
+app.use(middleware.errorHandler)
 
 module.exports = app

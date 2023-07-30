@@ -1,54 +1,31 @@
-const usersRouter = require('express').Router()
 const bcrypt = require('bcrypt')
-const {check, validationResult} = require('express-validator');
-
+const usersRouter = require('express').Router()
 const User = require('../models/user')
 
-usersRouter.get('/', async (req, res) => {
-  const users = await User.find({})
-  res.json(users)
-})
+usersRouter.post('/', async (request, response) => {
+  const body = request.body
 
-usersRouter.post('/', [
-  check('username').notEmpty().withMessage('username entry is a must')
-                   .isLength({min: 3}).withMessage('atleast 3 characters needed for each username'),
-  check('password').notEmpty().withMessage('no blank password is allowed')
-                   .isLength({min: 3}).withMessage('password must be at least 3 characters long')
-], async (req, res) => {
-  const result = validationResult(req)
-
-  if(result.errors[0])
-    return res.status(400).send(result.errors[0].msg)
-
-  try {
-    const existingUser = await User.findOne({ username: req.body.username });
-    if (existingUser) {
-      return res.status(400).send('this username is already reserved');
-    }
-
-    const user = new User(req.body)
-    
-    const salt = 10
-    user.password = await bcrypt.hash(user.password, salt)
-  
-    const api_result = await user.save()
-    return res.status(201).json(api_result).end()
-  } 
-  catch (err)
-  {
-    return res.status(400)
-              .send(err.message)
+  if (body.password.length < 3) {
+    return response.status(400).json({ error: `User validation failed: username: Path password is shorter than the minimum allowed length (3)` })
   }
+
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(body.password, saltRounds)
+
+  const user = new User({
+    username: body.username,
+    name: body.name,
+    passwordHash,
+  })
+
+  const savedUser = await user.save()
+
+  response.json(savedUser)
 })
 
-usersRouter.delete('/:id', async (req, res) => {
-  await User.findByIdAndRemove(req.params.id)
-  return res.status(204)
-})
-
-usersRouter.put('/:id', async (req, res) => {
-  await User.findByIdAndUpdate(req.params.id, req.body, { new: false })
-  return res.status(200)
-})
+usersRouter.get('/', async (request, response) => {
+    const users = await User.find({}).populate('blogs', { url: 1, title: 1, author: 1 })
+    response.json(users.map(user => user.toJSON()))
+  })
 
 module.exports = usersRouter

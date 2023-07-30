@@ -1,78 +1,107 @@
 const mongoose = require('mongoose')
-
+const bcrypt = require('bcrypt')
+const helper = require('./test_helper')
 const supertest = require('supertest')
 const app = require('../app')
-
 const api = supertest(app)
-
 const User = require('../models/user')
-const helper = require('../test_helpers/users')
 
-beforeEach(async () => {
-    await User.deleteMany({})
-    await User.insertMany(helper.initialUsers)
-})
+describe('when there is initially one user at db', () => {
+    beforeEach(async () => {
+      await User.deleteMany({})
 
-describe('user managements', () => {
-    test('create new user with username, password and a name', async () => {
+      const passwordHash = await bcrypt.hash('sekret', 10)
+      const user = new User({ username: 'root', passwordHash })
+
+      await user.save()
+    })
+
+    test('creation succeeds with a fresh username', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: 'salainen',
+      }
+
+      await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+
+      const usernames = usersAtEnd.map(u => u.username)
+      expect(usernames).toContain(newUser.username)
+    })
+
+    test('creation fails with proper statuscode and message if username already taken', async () => {
+        const usersAtStart = await helper.usersInDb()
+
         const newUser = {
-            'name':  'dummyName',
-            'username': 'dummyUserName',
-            'password': 'dummyPass'
+          username: 'root',
+          name: 'Superuser',
+          password: 'salainen',
         }
 
-        const response = await api.post('/api/users').send(newUser)
+        const result = await api
+          .post('/api/users')
+          .send(newUser)
+          .expect(400)
+          .expect('Content-Type', /application\/json/)
 
-        expect(response.status).toBe(201)
-        expect(JSON.parse(response.text).id).toBeDefined()
-    }, 500)
+        expect(result.body.error).toContain('`username` to be unique')
 
-    test('both username & password must be given for registration .. by missing username', async() => {
-        const badProperties = {'name': 'michael jackson', 'password': '123'}
-        
-        const response = await api.post('/api/users').send(badProperties)
+        const usersAtEnd = await helper.usersInDb()
+        expect(usersAtEnd).toHaveLength(usersAtStart.length)
+      })
 
-        expect(response.status).toBe(400)
-        expect(response.error.text).toBe('username entry is a must')
-    }, 500)
+      test('creation fails with proper statuscode and message if username too short', async () => {
+        const usersAtStart = await helper.usersInDb()
 
-    test('both username & password must be given for registration .. by missing password', async() => {
-        const badProperties = {'name': 'michael jackson', 'username': 'michael'}
-        
-        const response = await api.post('/api/users').send(badProperties)
-        
-        expect(response.status).toBe(400)
-        expect(response.error.text).toBe('no blank password is allowed')
-    }, 500)
+        const newUser = {
+          username: 'ro',
+          name: 'Superuser',
+          password: 'salainen',
+        }
 
-    test('both username & password must be atleast 3 characters .. by too short username', async() => {
-        const badProperties = {'name': 'george michael', 'username': 'gm', 'password': 'gm123'}
-        
-        const response = await api.post('/api/users').send(badProperties)
+        const result = await api
+          .post('/api/users')
+          .send(newUser)
+          .expect(400)
+          .expect('Content-Type', /application\/json/)
 
-        expect(response.status).toBe(400)
-        expect(response.error.text).toBe('atleast 3 characters needed for each username')
-    }, 500)
+        expect(result.body.error).toContain('is shorter than the minimum allowed length (3)')
 
-    test('both username & password must be atleast 3 characters .. by too short password', async() => {
-        const badProperties = {'name': 'george michael', 'username': 'g.michael', 'password': '99'}
-        
-        const response = await api.post('/api/users').send(badProperties)
+        const usersAtEnd = await helper.usersInDb()
+        expect(usersAtEnd).toHaveLength(usersAtStart.length)
+      })
 
-        expect(response.status).toBe(400)
-        expect(response.error.text).toBe('password must be at least 3 characters long')
-    }, 500)
+      test('creation fails with proper statuscode and message if password too short', async () => {
+        const usersAtStart = await helper.usersInDb()
 
-    test('no new user registration permitted by duplicated username', async() => {
-        const duplicatedUsername = {'name': 'george michael', 'username': 'michael7948', 'password': '123'}
-        
-        const response = await api.post('/api/users').send(duplicatedUsername)
+        const newUser = {
+          username: 'test-user',
+          name: 'Superuser',
+          password: 'sa',
+        }
 
-        expect(response.status).toBe(400)
-        expect(response.error.text).toBe('this username is already reserved')
-    }, 500)
-})
+        const result = await api
+          .post('/api/users')
+          .send(newUser)
+          .expect(400)
+          .expect('Content-Type', /application\/json/)
 
-afterAll(async () => {
-    await mongoose.connection.close()
-})
+        expect(result.body.error).toContain('is shorter than the minimum allowed length (3)')
+
+        const usersAtEnd = await helper.usersInDb()
+        expect(usersAtEnd).toHaveLength(usersAtStart.length)
+      })
+
+    afterAll(() => {
+        mongoose.connection.close()
+      })
+  })
