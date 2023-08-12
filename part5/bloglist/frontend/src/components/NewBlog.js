@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const NewBlog = ({createBlog}) => {
+const NewBlog = ({createBlog, newBlogVisibility}) => {
     const [newTitle, setNewTitle ] = useState('')
     const [newAuthor, setNewAuthor ] = useState('')
     const [newUrl, setNewUrl ] = useState('')
@@ -32,6 +32,7 @@ const NewBlog = ({createBlog}) => {
     }
 
     return (
+        newBlogVisibility ? 
         <form onSubmit = {addNewBlog}>
             <div>
                 <div>
@@ -48,7 +49,7 @@ const NewBlog = ({createBlog}) => {
                 </div>
                 <button>create</button>
             </div>
-        </form>
+        </form> : ''
     )
 }
 

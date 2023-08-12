@@ -3,6 +3,7 @@ import Blog from './components/Blog'
 import NewBlog from './components/NewBlog'
 import Login from './components/Login'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -14,6 +15,8 @@ const App = () => {
   
   const [errorMessage, setErrorMessage] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
+
+  const [newBlogVisibility, setNewBlogVisibility] = useState(false)
 
   const localStorageKey = 'loggedInBlogAppUser';
 
@@ -106,10 +109,15 @@ const App = () => {
           <p>
               {user.name} logged in <button onClick={handleLogout} type="submit">logout</button>
           </p>
-          <h2>create new</h2>
           <NewBlog
+            newBlogVisibility = {newBlogVisibility}
             createBlog={createBlog}
           />
+          <Togglable
+            newBlogVisibility = {newBlogVisibility}
+            setNewBlogVisibility = {setNewBlogVisibility}
+          />
+
           {blogs.map(blog =>
             <Blog key={blog.id} blog={blog} />
           )}
