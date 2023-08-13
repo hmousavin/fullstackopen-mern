@@ -1,29 +1,39 @@
-const Login = (props) => {
-    const {username, setUsername, password, setPassword, handleLogin} = props || {};
+import PropTypes from 'prop-types'
 
-    return (
-      <form onSubmit = {handleLogin}>
-        <div>
+const Login = (props) => {
+  const { username, setUsername, password, setPassword, handleLogin } = props || {}
+
+  return (
+    <form onSubmit = {handleLogin}>
+      <div>
           username
-            <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
+        <input
+          type="text"
+          value={username}
+          name="Username"
+          onChange={({ target }) => setUsername(target.value)}
+        />
+      </div>
+      <div>
           password
-            <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type="submit">login</button>
-      </form>
-    )
+        <input
+          type="password"
+          value={password}
+          name="Password"
+          onChange={({ target }) => setPassword(target.value)}
+        />
+      </div>
+      <button type="submit">login</button>
+    </form>
+  )
 }
 
-export default Login;
+Login.propTypes = {
+  handleLogin: PropTypes.func.isRequired,
+  setUsername: PropTypes.func.isRequired,
+  setPassword: PropTypes.func.isRequired,
+  username: PropTypes.string.isRequired,
+  password: PropTypes.string.isRequired
+}
+
+export default Login

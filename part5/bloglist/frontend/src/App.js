@@ -12,13 +12,12 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  
   const [errorMessage, setErrorMessage] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
 
   const [newBlogVisibility, setNewBlogVisibility] = useState(false)
 
-  const localStorageKey = 'loggedInBlogAppUser';
+  const localStorageKey = 'loggedInBlogAppUser'
 
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem(localStorageKey)
@@ -42,12 +41,11 @@ const App = () => {
 
     try {
       const user = await loginService.login({
-        username, password,
+        username, password
       })
-      
       window.localStorage.setItem(
         localStorageKey, JSON.stringify(user)
-      ) 
+      )
       blogService.setToken(user.token)
       setUser(user)
       setUsername(user.username)
@@ -89,40 +87,69 @@ const App = () => {
     }
   }
 
+  const removeBlog = async (blog) => {
+    try {
+      if (window.confirm(`remove blog ${blog.title} by ${blog.author} ?`)){
+        await blogService.removeBlog(blog)
+        setBlogs(blogs.filter(b => b !== blog))
+      }
+    } catch (error) {
+      setErrorMessage('unable to remove selected blog')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 3000)
+    }
+  }
+
+  const updateBlog = async (blog) => {
+    try {
+      await blogService.updateBlog(blog)
+    } catch (error) {
+      setErrorMessage('uable to increase number of likes')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 3000)
+    }
+  }
+
   return (
     <div>
       <Notification errorMessage={errorMessage} successMessage={successMessage}/>
       {user === null ?
         <div>
           <h3>log in to application</h3>
-          <Login 
+          <Login
             handleLogin={handleLogin}
             username={username}
             setUsername={setUsername}
             password={password}
             setPassword={setPassword}
           />
-
-        </div> : 
+        </div> :
         <div>
           <h2>blogs</h2>
           <p>
-              {user.name} logged in <button onClick={handleLogout} type="submit">logout</button>
+            {user.name} logged in <button onClick={handleLogout} type="submit">logout</button>
           </p>
           <NewBlog
             newBlogVisibility = {newBlogVisibility}
-            createBlog={createBlog}
+            createBlog = {createBlog}
           />
           <Togglable
             newBlogVisibility = {newBlogVisibility}
             setNewBlogVisibility = {setNewBlogVisibility}
           />
-
-          {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
-          )}
+          {blogs.sort((a, b) => b.likes - a.likes)
+            .map(blog =>
+              <Blog
+                key={blog.id}
+                blog={blog}
+                updateBlog={updateBlog}
+                removeBlog={removeBlog}
+                userId={user.id}
+              />)
+          }
         </div>}
-      
     </div>
   )
 }
