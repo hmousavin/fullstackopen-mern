@@ -9,7 +9,8 @@ const blogStyle = {
   marginBottom: 5
 }
 
-const Blog = ({ blog, updateBlog, removeBlog, userId }) => {
+const Blog = (props) => {
+  const { blog, updateBlog, removeBlog, userId } = props
   const [showAll, setShowAll] = useState(false)
   const [likes, setLikes] = useState(blog.likes)
 
@@ -35,14 +36,14 @@ const Blog = ({ blog, updateBlog, removeBlog, userId }) => {
         {blog.title}
         &nbsp;<button id="view-contents-btn" onClick={toggleShowDetails}>view</button>
       </div>
-      {showAll &&
+      { showAll &&
         <div>
           <div>      {blog.url}</div>
           <div>likes {blog.likes}
             &nbsp;<button onClick={increaseLikes}>like</button>
           </div>
-          <div>      {blog.author}</div>
-          {blog.user.id === userId &&
+          <div>{blog.author}</div>
+          {blog.user!==undefined && blog.user.id === userId &&
            <button onClick={removeThisBlog}>remove</button>}
         </div>
       }
