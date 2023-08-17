@@ -55,19 +55,19 @@ describe('blog component test', () => {
       url: 'https://www.cs.utexas.edu/~EWD/ewd04xx/EWD405.PDF'
     }
 
-    const update = jest.fn()
+    const mockUpdateBlog = jest.fn()
     const remove = jest.fn()
-    const mockLikeHandler = jest.fn()
 
     const component = render(
-      <Blog blog={blog} updateBlog={update} removeBlog={remove} increaseLike={mockLikeHandler}/>
+      <Blog blog={blog} updateBlog={mockUpdateBlog} removeBlog={remove} />
     )
+
     fireEvent.click(component.getByText('view')) // press the show button
 
     const button = component.getByText('like')
     fireEvent.click(button)
     fireEvent.click(button)
 
-    expect(mockLikeHandler.mock.calls).toHaveLength(2)
+    expect(mockUpdateBlog.mock.calls).toHaveLength(2)
   })
 })

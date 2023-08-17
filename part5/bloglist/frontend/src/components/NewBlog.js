@@ -38,15 +38,15 @@ const NewBlog = ({ createBlog, newBlogVisibility }) => {
         <div>
           <div>
             <label>title:</label>
-            <input type="text" value={newTitle} onChange={handleTitleChange}></input>
+            <input type="text" value={newTitle} onChange={handleTitleChange} placeholder='the title of blog'></input>
           </div>
           <div>
             <label>author:</label>
-            <input type="text" value={newAuthor} onChange={handleAuthorChange}></input>
+            <input type="text" value={newAuthor} onChange={handleAuthorChange} placeholder='the author of blog'></input>
           </div>
           <div>
             <label>url:</label>
-            <input type="text" value={newUrl} onChange={handleUrlChange}></input>
+            <input type="text" value={newUrl} onChange={handleUrlChange} placeholder='the url of blog'></input>
           </div>
           <button>create</button>
         </div>
