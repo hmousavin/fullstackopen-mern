@@ -1,17 +1,26 @@
 describe('Blog app', function() {
+  const port = 3003
   beforeEach(function() {
-    cy.request('POST', 'http://localhost:3000/api/testing/reset')
+    cy.request('POST', `http://localhost:${port}/api/testing/reset`)
+
+    const user = {
+      name: 'mluukkai-salainen',
+      username: 'mluukkai',
+      password: 'salainen'
+    }
+    cy.request('POST', `http://localhost:${port}/api/users`, user)
+    cy.visit(`http://localhost:${port}`)
   })
 
   it('Login form is shown', function() {
-    cy.visit('http://localhost:3000/')
+    cy.visit(`http://localhost:${port}/`)
 
     cy.contains('log in to application')
   })
 
   describe('Login', function() {
     it('succeeds with correct credentials', function() {
-      cy.visit('http://localhost:3000')
+      cy.visit(`http://localhost:${port}`)
 
       cy.get('#username').type('mluukkai')
       cy.get('#password').type('salainen')
@@ -21,7 +30,7 @@ describe('Blog app', function() {
     })
 
     it('fails with wrong credentials', function() {
-      cy.visit('http://localhost:3000')
+      cy.visit(`http://localhost:${port}`)
 
       cy.get('#username').type('mluukkai')
       cy.get('#password').type('wrong password')
