@@ -8,11 +8,12 @@ testingRouter.post('/reset', async (request, response) => {
   await User.deleteMany({})
 
   const passwordHash = await bcrypt.hash('salainen', 10)
-  await new User({
-    name: 'mluukkai salainen',
+  const user = new User({
     username: 'mluukkai',
-    passwordHash: passwordHash,
-  }).save()
+    name: 'mluukkai-salainen',
+    passwordHash,
+  })
+  await user.save()
 
   response.status(204).end()
 })
