@@ -8,7 +8,7 @@ const Login = (props) => {
       <div>
           username
         <input
-          id="#username"
+          id="username"
           type="text"
           value={username}
           name="Username"
@@ -18,7 +18,7 @@ const Login = (props) => {
       <div>
           password
         <input
-          id="#password"
+          id="password"
           type="password"
           value={password}
           name="Password"
