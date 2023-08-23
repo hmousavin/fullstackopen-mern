@@ -36,11 +36,58 @@ describe('Blog app', function() {
 
   describe('When logged in', function() {
     beforeEach(function() {
-      // log in user here
+      cy.login({ username: 'mluukkai', password: 'salainen' })
     })
 
     it('A blog can be created', function() {
-      // ...
+      cy.get('#toggle-visibliy-btn').click()
+
+      const blog = {
+        title: 'Computing Machinery and Intelligence',
+        author: 'Alan Turing',
+        url: 'https://www.csee.umbc.edu/courses/471/papers/turing.pdf'
+      }
+
+      cy.get('input[placeholder="the title of blog"]').type(blog.title)
+      cy.get('input[placeholder="the author of blog"]').type(blog.author)
+      cy.get('input[placeholder="the url of blog"]').type(blog.url)
+
+      cy.get('#create-blog').click()
+
+      cy.contains(`new blog ${blog.title} just successfully added!`)
+      cy.contains(blog.title)
+    })
+
+    describe('When a blog created', function() {
+      beforeEach(function() {
+        const blog = {
+          title: 'Computing Machinery and Intelligence',
+          author: 'Alan Turing',
+          url: 'https://www.csee.umbc.edu/courses/471/papers/turing.pdf'
+          user: '64e61a25e585512690c0c7c2',
+        }
+        cy.createBlog(blog)
+      })
+
+      it('A user can like a blog', function() {
+        cy.get('#view-contents-btn').click()
+
+        cy.contains('likes 0')
+        cy.get('#like-blog-btn').click()
+        cy.contains('likes 1')
+      })
+
+      it('A user who created a blog can delete it', function() {
+
+      })
+
+      it('Only the creator of blog can delete it not anyone else', function(){
+
+      })
+
+      it('The shown blogs are ordered according to number of likes, so the most likes are on top', function() {
+
+      })
     })
   })
 })

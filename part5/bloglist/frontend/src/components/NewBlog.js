@@ -48,7 +48,7 @@ const NewBlog = ({ createBlog, newBlogVisibility }) => {
             <label>url:</label>
             <input type="text" value={newUrl} onChange={handleUrlChange} placeholder='the url of blog'></input>
           </div>
-          <button>create</button>
+          <button id='create-blog'>create</button>
         </div>
       </form> : ''
   )

@@ -40,11 +40,11 @@ const Blog = (props) => {
         <div>
           <div>      {blog.url}</div>
           <div>likes {blog.likes}
-            &nbsp;<button onClick={increaseLikes}>like</button>
+            &nbsp;<button id='like-blog-btn' onClick={increaseLikes}>like</button>
           </div>
           <div>{blog.author}</div>
           {blog.user!==undefined && blog.user.id === userId &&
-           <button onClick={removeThisBlog}>remove</button>}
+           <button id='remove-blog-btn' onClick={removeThisBlog}>remove</button>}
         </div>
       }
     </div>
