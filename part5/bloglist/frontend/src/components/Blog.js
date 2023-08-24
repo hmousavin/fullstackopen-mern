@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import PropTypes from 'prop-types'
 
 const blogStyle = {
@@ -13,11 +13,12 @@ const Blog = (props) => {
   const { blog, updateBlog, removeBlog, userId } = props
   const [showAll, setShowAll] = useState(false)
   const [likes, setLikes] = useState(blog.likes)
+  const newId = useId().replaceAll(':','').replace('r','')
 
   const toggleShowDetails = () => {
     setShowAll(!showAll)
 
-    document.getElementById('view-contents-btn').innerText = showAll ? 'view' : 'hide'
+    document.getElementsByClassName('toggle-show')[0].innerText = showAll ? 'view' : 'hide'
   }
 
   const increaseLikes = () => {
@@ -31,20 +32,23 @@ const Blog = (props) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} id={'blog'+newId}>
       <div>
         {blog.title}
-        &nbsp;<button id="view-contents-btn" onClick={toggleShowDetails}>view</button>
+        &nbsp;<button className='toggle-show' id={showAll ? 'hide-contents-btn'+newId : 'show-contents-btn'+newId} onClick={toggleShowDetails}>view</button>
       </div>
       { showAll &&
         <div>
           <div>      {blog.url}</div>
-          <div>likes {blog.likes}
-            &nbsp;<button id='like-blog-btn' onClick={increaseLikes}>like</button>
+          <div>
+            <span id={'number-of-likes'+newId}>likes {blog.likes}
+            </span>
+            &nbsp;
+            <button id={'like-blog-btn'+newId} onClick={increaseLikes}>like</button>
           </div>
           <div>{blog.author}</div>
           {blog.user!==undefined && blog.user.id === userId &&
-           <button id='remove-blog-btn' onClick={removeThisBlog}>remove</button>}
+           <button id={'remove-blog-btn'+newId} onClick={removeThisBlog}>remove</button>}
         </div>
       }
     </div>
