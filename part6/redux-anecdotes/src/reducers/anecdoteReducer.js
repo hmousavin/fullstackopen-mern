@@ -20,7 +20,6 @@ const asObject = (anecdote) => {
 const initialState = anecdotesAtStart.map(asObject)
 
 const anecdoteReducer = (state = initialState, action) => {
-console.log('state:',state, 'action:',action)  
   if (action.type === 'VOTE') {
     const index = state.findIndex(s => s.id === action.id)
     state[index] = {
