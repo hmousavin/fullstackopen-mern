@@ -1,20 +1,17 @@
-const filterReducer = (state = null, payload) => {
-    let {action , state : all_states} = payload
-    if (action && action.type === 'Filter') {
-        
-        console.log('before:', state)
-        state = all_states.filter(s => s.content.includes(action.filter))
-        console.log('after:', state)
-    }
+import { createSlice } from "@reduxjs/toolkit";
 
-    return state
-}
+const initialState = "";
 
-export const filterChange = (typedInput) => {
-    return {
-        type: 'Filter', 
-        filter: typedInput
-    }
-}
+const filterSlice = createSlice({
+  name: "filter",
+  initialState,
+  reducers: {
+    setFilter(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
 
-export default filterReducer
+export const { setFilter } = filterSlice.actions;
+export default filterSlice.reducer;
