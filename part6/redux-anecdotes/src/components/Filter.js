@@ -1,12 +1,18 @@
-import { useDispatch } from "react-redux"
-import { setFilter } from "../reducers/filterReducer";
+import { useDispatch, useSelector } from "react-redux"
+import { overrideAnecdotes } from '../reducers/anecdoteReducer'
 
 const Filter = () => {
     const dispatch = useDispatch()
-
+    const anecdotes = useSelector(state => state.anecdotes)
+    
     const handleChange = (event) => {
       event.preventDefault();
-      dispatch(setFilter(event.target.value));
+      if (event.target.value !== '') {
+        const filterd = anecdotes.filter(s => s.content.includes(event.target.value))
+        dispatch(overrideAnecdotes(filterd || []));
+      }
+      else
+        dispatch(overrideAnecdotes([]));
     }
     const style = {
       marginBottom: 10
@@ -19,4 +25,4 @@ const Filter = () => {
     )
 }
 
-export default Filter
+export default Filter;
