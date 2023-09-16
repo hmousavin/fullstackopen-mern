@@ -1,53 +1,46 @@
 import { createSlice } from "@reduxjs/toolkit"
-
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
-
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0
-  }
-}
-
-const initialState = anecdotesAtStart.map(asObject)
+import anecdotes from "../services/anecdotes"
+import { show } from "./notificationReducer"
 
 const anecdoteSlice = createSlice({
   name: 'anecdotes',
-  initialState: initialState,
+  initialState: [],
   reducers: {
     voteAction(state, action) {
-      const index = state.findIndex(s => s.id === action.payload)
+      const index = state.findIndex(s => s.id === action.payload.id)
       state[index] = {
-                      content: state[index].content, 
-                      id:      state[index].id, 
-                      votes:   state[index].votes + 1
-                    }
+        content: state[index].content, 
+        id:      state[index].id, 
+        votes:   state[index].votes + 1
+      }
 
       state = [...state.sort((a,b) => b.votes - a.votes)]
     },
     addAnecdoteAction(state, action) {
-      state.push({
-        content: action.payload,
-        id:      getId(),
-        votes:   0
-      })
+        state.push(action.payload)
     },
     overrideAnecdotes(state, action) {
       const {payload} = action
-      return payload.length > 0 ? [...payload] : [...initialState]
+      return payload.length > 0 ? [...payload] : []
     }
   }
 })
+
+export const addAnecdote = content => {
+  return async dispatch => {
+    const newAnecdote = await anecdotes.createNew(content)
+    dispatch(addAnecdoteAction(newAnecdote))
+  }
+}
+
+export const vote = (anecdote) => {
+  return async dispatch => {
+    const updated = await anecdotes.updateOne({...anecdote, votes: anecdote.votes + 1})
+    dispatch(voteAction(updated))
+    
+    dispatch(show(`you voted '${anecdote.content}'`, 5))
+  }
+}
 
 export const {voteAction, addAnecdoteAction, overrideAnecdotes} = anecdoteSlice.actions;
 export default anecdoteSlice.reducer;
