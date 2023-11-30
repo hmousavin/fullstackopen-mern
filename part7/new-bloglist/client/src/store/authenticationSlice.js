@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { showError, showInfo } from './notificationSlice';
-import authenticationService from '../services/authentication-service';
+import authenticationService from '../services/authenticationService';
 
 export const authenticationSlice = createSlice({
   name: 'authenticationSlice',

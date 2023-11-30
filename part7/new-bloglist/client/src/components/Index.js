@@ -6,7 +6,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   const { loggedIn } = useSelector((store) => store.authenticationSlice);
-  if (loggedIn == false) navigate('/login');
+  if (loggedIn === false) navigate('/login');
 
   return (
     <div>
