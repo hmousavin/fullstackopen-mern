@@ -1,42 +1,67 @@
+require('dotenv').config();
 const express = require('express');
 const userRouter = express.Router();
-const { StatusCodes } = require('http-status-codes');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 userRouter.post('/register', (req, res) => {
   const { name, username, password } = req.body;
-  
-  const bcrypt = require('bcrypt')
-  const hashed = bcrypt.hash(password, 10)
+
+  const bcrypt = require('bcrypt');
+  const hashed = bcrypt.hash(password, 10);
   new User({ name, username, hashed })
     .save()
     .then(() => {
-      res.sendStatus(StatusCodes.CREATED);
+      res.sendStatus(201);
     })
     .catch((error) => {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+      res.status().send(error);
     });
 });
 
-
-userRouter.get('/login', (req, res) => {
+userRouter.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (User.find((u) => {u.username === username && u.password === password})){
-    
-    res.status(StatusCodes.ACCEPTED).send()
+  const user = User.findOne((u) => {
+    u.username === username;
+  });
+  if (user && bcrypt.compare(password, user.passwordHash)) {
+    User.updateOne(
+      { id: user.id },
+      {
+        $set: {
+          isLoggedIn: true,
+        },
+      }
+    );
 
-  }
-  else
-    
+    const accessToken = jwt.sign(user, process.env.SECRET_ACCESS_TOKEN);
+    user.res.status(202).send({ accessToken });
+  } else res.sendStatus(403);
 });
 
-userRouter.get('/logout', (req, res) => {
-  this.isLoggedIn = false;
-  res.sendStatus(StatusCodes.OK);
+userRouter.delete('/logout', (req, res) => {
+  const { token } = req.body;
+  const user = User.findOne((u) => {
+    u.username === username;
+  });
+  if (user && bcrypt.compare(password, user.passwordHash)) {
+    User.updateOne(
+      { id: user.id },
+      {
+        $set: {
+          isLoggedIn: false,
+        },
+      }
+    );
+
+    const accessToken = jwt.sign(user, process.env.SECRET_ACCESS_TOKEN);
+    user.res.sendStatus(204);
+  } else res.sendStatus(403);
 });
 
 userRouter.get('/isLoggedIn', (req, res) => {
-  res.status(StatusCodes.OK).send(this.isLoggedIn);
+  res.status(200).send(this.isLoggedIn);
 });
 
 module.exports = userRouter;
