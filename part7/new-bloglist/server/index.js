@@ -1,10 +1,14 @@
+const { StatusCodes } = require('http-status-codes');
 const express = require('express');
-const app = express();
+const db = require('./src/db');
+const server = express();
 
-app.use('/user', require('./src/controllers/user'));
+db.connect();
+server.use('/user', require('./src/controllers/user'));
 
-app.get('/', (req, res) => {
-  res.sendStatus(404);
+server.get('/', (req, res) => {
+  res.sendStatus(StatusCodes.NOT_FOUND);
 });
 
-app.listen(3003);
+const config = require('./src/utils/config');
+server.listen(config.PORT);

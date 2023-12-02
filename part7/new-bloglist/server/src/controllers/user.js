@@ -1,16 +1,33 @@
 const express = require('express');
 const userRouter = express.Router();
 const { StatusCodes } = require('http-status-codes');
-
-let isLoggedIn = false;
+const User = require('../models/user');
 
 userRouter.post('/register', (req, res) => {
-  res.sendStatus(StatusCodes.NOT_IMPLEMENTED);
+  const { name, username, password } = req.body;
+  
+  const bcrypt = require('bcrypt')
+  const hashed = bcrypt.hash(password, 10)
+  new User({ name, username, hashed })
+    .save()
+    .then(() => {
+      res.sendStatus(StatusCodes.CREATED);
+    })
+    .catch((error) => {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+    });
 });
 
+
 userRouter.get('/login', (req, res) => {
-  this.isLoggedIn = true;
-  res.sendStatus(StatusCodes.OK);
+  const { username, password } = req.body;
+  if (User.find((u) => {u.username === username && u.password === password})){
+    
+    res.status(StatusCodes.ACCEPTED).send()
+
+  }
+  else
+    
 });
 
 userRouter.get('/logout', (req, res) => {
