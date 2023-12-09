@@ -2,9 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './components/App';
-import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+// import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
+import Register from './components/Register';
 import { NotFound } from './components/NotFound';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -21,10 +22,12 @@ root.render(
             <Route path="/index" element={<Index />} />
             <Route path="*" element={<NotFound />} />
           </Route>
+          <Route path="/register" element={<Register />} />
+          <Route path="" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </Provider>
   </React.StrictMode>
 );
 
-reportWebVitals(console.log);
+// reportWebVitals(console.log);

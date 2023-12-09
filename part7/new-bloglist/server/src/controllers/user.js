@@ -41,7 +41,6 @@ userRouter.post('/login', (req, res) => {
 });
 
 userRouter.delete('/logout', (req, res) => {
-  const { token } = req.body;
   const user = User.findOne((u) => {
     u.username === username;
   });

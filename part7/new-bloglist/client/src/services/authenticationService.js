@@ -3,6 +3,7 @@ const baseUrl = '/api/user';
 
 const login = (credentials) => {
   const response = axios.post(`${baseUrl}/login`, credentials);
+  console.log('response:', response);
   return response.data;
 };
 

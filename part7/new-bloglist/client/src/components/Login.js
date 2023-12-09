@@ -62,6 +62,14 @@ const Login = () => {
       <button id="login-button" type="submit">
         login
       </button>
+      <button
+        id="resister-button"
+        type="button"
+        onClick={() => {
+          navigate('/register');
+        }}>
+        I'm not a member!
+      </button>
     </form>
   );
 };
