@@ -1,4 +1,5 @@
 const { ApolloServer } = require('@apollo/server');
+const { ApolloServerPluginLandingPageDisabled } = require('@apollo/server/plugin/disabled');
 const { startStandaloneServer } = require('@apollo/server/standalone');
 const { v1: uuid } = require('uuid');
 
@@ -19,28 +20,14 @@ let authors = [
     born: 1821,
   },
   {
-    name: 'Joshua Kerievsky', 
+    name: 'Joshua Kerievsky', // birthyear not known
     id: 'afa5b6f2-344d-11e9-a414-719c6709cf3e',
   },
   {
-    name: 'Sandi Metz', 
+    name: 'Sandi Metz', // birthyear not known
     id: 'afa5b6f3-344d-11e9-a414-719c6709cf3e',
   },
 ];
-
-/*
- * Suomi:
- * Saattaisi olla järkevämpää assosioida kirja ja sen tekijä tallettamalla kirjan yhteyteen tekijän nimen sijaan tekijän id
- * Yksinkertaisuuden vuoksi tallennamme kuitenkin kirjan yhteyteen tekijän nimen
- *
- * English:
- * It might make more sense to associate a book with its author by storing the author's id in the context of the book instead of the author's name
- * However, for simplicity, we will store the author's name in connection with the book
- *
- * Spanish:
- * Podría tener más sentido asociar un libro con su autor almacenando la id del autor en el contexto del libro en lugar del nombre del autor
- * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conección con el libro
- */
 
 let books = [
   {
@@ -94,22 +81,18 @@ let books = [
   },
 ];
 
-/*
-  you can remove the placeholder query once your first one has been implemented 
-*/
-
 const typeDefs = `
   type Book {
     title: String!,
     published: Int!,
-    author: String!,
+    author: Author!
     id: ID!,
-    genres: [String!]!,
+    genres: [String!]!
   }
 
   type Author {
     name: String!,
-    born: Int!,
+    born: Int,
     bookCount: Int!
   }
 
@@ -120,8 +103,12 @@ const typeDefs = `
     allAuthors: [Author!]!    
   }
 
+  input AuthorInput {
+    name: String!
+  }
+
   type Mutation {
-    addBook(title: String!, author: String!, published: Int!, genres: [String!]!): Book!
+    addBook(title: String!, author: AuthorInput!, published: Int!, genres: [String!]!): Book!
     setBirthYear(name: String!, born: Int!): Author!
   }
 `;
@@ -132,34 +119,40 @@ const resolvers = {
     authorCount: () => authors.length,
     allBooks: (parent, { author, genre }) =>
       books
-      .filter(
-        (b) =>
+        .filter(
+          (b) =>
           (author ? b.author.toLowerCase() === author.toLowerCase() : true) &&
-          (genre ? b.genres.includes(genre.toLowerCase()) : true)
-      )
-      .map((b) => ({
-        title: b.title,
-        author: b.author,
-        published: b.published,
-        genres: b.genres,
-    })),
+          (genre  ? b.genres.includes(genre.toLowerCase()) : true)
+        )
+        .map((b) => {
+          const author = authors.find((a) => a.name === b.author)
+          return {
+            title: b.title,
+            author: author,
+            published: b.published,
+            genres: b.genres,
+          }
+        }),
     allAuthors: () =>
       authors.map((a) => ({
         name: a.name,
-        born: Number(authors.find(aa => aa.id === a.id).born) | undefined,
+        born: a.born,
         bookCount: books.filter((b) => b.author === a.name).length,
-    })),
+      })),
   },
   Mutation: {
     addBook: (root, args) => {
-      const book = { ...args, id: uuid() };
-      books = books.concat(book);
-      if (!authors.includes(book.author))
-        authors = authors.concat({
-          id: uuid(),
-          name: book.author
-        })
+      const authorName = args.author.name;
+      let author = authors.find((a) => a.name === authorName);
 
+      // If the author does not exist, create a new author
+      if (!author) {
+        author = { name: authorName, id: uuid() };
+        authors = authors.concat(author);
+      }
+      
+      const book = { ...args, author, id: uuid() };
+      books = books.concat(book);
       return book;
     },
     setBirthYear: (root, args) => {
@@ -180,6 +173,7 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  // plugins: [ApolloServerPluginLandingPageDisabled()],
 });
 
 startStandaloneServer(server, {

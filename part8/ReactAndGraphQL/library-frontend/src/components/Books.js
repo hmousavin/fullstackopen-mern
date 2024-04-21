@@ -4,10 +4,13 @@ const ALL_BOOKS = gql`
   query {
     allBooks {
       title
-      author
       published
+      genres
+      author {
+        name
+      }
     }
-  }  
+  } 
 `
 
 const Books = (props) => {
@@ -39,7 +42,7 @@ const Books = (props) => {
           {result.data.allBooks.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}
