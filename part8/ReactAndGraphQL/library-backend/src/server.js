@@ -1,85 +1,29 @@
 const { ApolloServer } = require('@apollo/server');
-const { ApolloServerPluginLandingPageDisabled } = require('@apollo/server/plugin/disabled');
+const { ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
 const { startStandaloneServer } = require('@apollo/server/standalone');
+const { seedData } = require('./seeder')
 const { v1: uuid } = require('uuid');
 
-let authors = [
-  {
-    name: 'Robert Martin',
-    id: 'afa51ab0-344d-11e9-a414-719c6709cf3e',
-    born: 1952,
-  },
-  {
-    name: 'Martin Fowler',
-    id: 'afa5b6f0-344d-11e9-a414-719c6709cf3e',
-    born: 1963,
-  },
-  {
-    name: 'Fyodor Dostoevsky',
-    id: 'afa5b6f1-344d-11e9-a414-719c6709cf3e',
-    born: 1821,
-  },
-  {
-    name: 'Joshua Kerievsky', // birthyear not known
-    id: 'afa5b6f2-344d-11e9-a414-719c6709cf3e',
-  },
-  {
-    name: 'Sandi Metz', // birthyear not known
-    id: 'afa5b6f3-344d-11e9-a414-719c6709cf3e',
-  },
-];
+const mongoose = require('mongoose')
+mongoose.set('strictQuery', false)
+const Author = require('./models/author')
+const Book = require('./models/book')
 
-let books = [
-  {
-    title: 'Clean Code',
-    published: 2008,
-    author: 'Robert Martin',
-    id: 'afa5b6f4-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring'],
-  },
-  {
-    title: 'Agile software development',
-    published: 2002,
-    author: 'Robert Martin',
-    id: 'afa5b6f5-344d-11e9-a414-719c6709cf3e',
-    genres: ['agile', 'patterns', 'design'],
-  },
-  {
-    title: 'Refactoring, edition 2',
-    published: 2018,
-    author: 'Martin Fowler',
-    id: 'afa5de00-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring'],
-  },
-  {
-    title: 'Refactoring to patterns',
-    published: 2008,
-    author: 'Joshua Kerievsky',
-    id: 'afa5de01-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring', 'patterns'],
-  },
-  {
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
-    published: 2012,
-    author: 'Sandi Metz',
-    id: 'afa5de02-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring', 'design'],
-  },
-  {
-    title: 'Crime and punishment',
-    published: 1866,
-    author: 'Fyodor Dostoevsky',
-    id: 'afa5de03-344d-11e9-a414-719c6709cf3e',
-    genres: ['classic', 'crime'],
-  },
-  {
-    title: 'The Demon ',
-    published: 1872,
-    author: 'Fyodor Dostoevsky',
-    id: 'afa5de04-344d-11e9-a414-719c6709cf3e',
-    genres: ['classic', 'revolution'],
-  },
-];
+require('dotenv').config()
+
+const MONGODB_URI = process.env.TEST_MONGODB_URI
+
+console.log('connecting to', MONGODB_URI)
+
+mongoose.connect(MONGODB_URI)
+        .then(() => {
+          console.log('connected to MongoDB')
+        })
+        .catch((error) => {
+          console.log('error connection to MongoDB:', error.message)
+        })
+
+seedData()
 
 const typeDefs = `
   type Book {
@@ -115,56 +59,62 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (parent, { author, genre }) =>
-      books
-        .filter(
-          (b) =>
-          (author ? b.author.toLowerCase() === author.toLowerCase() : true) &&
-          (genre  ? b.genres.includes(genre.toLowerCase()) : true)
-        )
-        .map((b) => {
-          const author = authors.find((a) => a.name === b.author)
-          return {
-            title: b.title,
-            author: author,
-            published: b.published,
-            genres: b.genres,
-          }
-        }),
-    allAuthors: () =>
-      authors.map((a) => ({
-        name: a.name,
-        born: a.born,
-        bookCount: books.filter((b) => b.author === a.name).length,
-      })),
+    bookCount: async () => await Book.collection.countDocuments(),
+    authorCount: async () => await Author.collection.countDocuments(),
+    allBooks: async (parent, { author, genre }) => {
+      let books = await Book.find({}).populate('author');
+      return books.filter(
+                    (b) =>
+                    (!author || b.author.name.toLowerCase() === author.toLowerCase()) &&
+                    (!genre  || b.genres.includes(genre.toLowerCase()))
+                  )
+                  .map((b) => {
+                    return {
+                      title: b.title,
+                      author: b.author, // this is now the populated author document
+                      published: b.published,
+                      genres: b.genres,
+                    };
+                  });
+    },
+    allAuthors: async () => {
+      const authors = await Author.find({});
+      return Promise.all(authors.map(async (a) => {
+        const bookCount = await Book.countDocuments({ 'author.name': a.name });
+        return {
+          name: a.name,
+          born: a.born,
+          bookCount: bookCount,
+        };
+      }));
+    }
   },
   Mutation: {
-    addBook: (root, args) => {
+    addBook: async (root, args) => {
       const authorName = args.author.name;
-      let author = authors.find((a) => a.name === authorName);
+      let author = await Author.findOne({ name: authorName });
 
-      // If the author does not exist, create a new author
       if (!author) {
-        author = { name: authorName, id: uuid() };
-        authors = authors.concat(author);
+        author = new Author({ name: authorName, id: uuid() });
+        await author.save();
       }
       
-      const book = { ...args, author, id: uuid() };
-      books = books.concat(book);
+      const book = new Book({ ...args, author, id: uuid() });
+      await book.save();
+
       return book;
     },
-    setBirthYear: (root, args) => {
-      const author = {...args}
-      const target = authors.find(a => a.name == author.name)
+    setBirthYear: async (root, args) => {
+      const author = {...args};
+      const target = await Author.findOne({ name: author.name });
       if (target) {
-        target.born = author.born
-        return author
+        target.born = author.born;
+        await target.save();
+        return author;
       }
       else {
-        console.log(`target ${author} doesn't exist on ${authors}`)
-        return null
+        console.log(`target ${author} doesn't exist on ${authors}`);
+        return null;
       }
     }
   },
@@ -173,7 +123,9 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  // plugins: [ApolloServerPluginLandingPageDisabled()],
+
+  csrfPrevention: false,
+  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
 });
 
 startStandaloneServer(server, {

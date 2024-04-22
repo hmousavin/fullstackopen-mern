@@ -1,3 +1,4 @@
+const Author = require('./models/author')
 const Book = require('./models/book')
 
 const books = [
@@ -78,6 +79,27 @@ const authors = [
     },
 ];
 
-export default async function SeedData() {
-    
+async function seedData() {
+    await Book.deleteMany({});
+    await Author.deleteMany({});
+
+    for (const author of authors) {
+        const newAuthor = new Author(author);
+        await newAuthor.save();
+    }
+
+    for (const book of books) {
+        const author = await Author.findOne({ name: book.author });
+
+        const newBook = new Book({
+            ...book,
+            author: author._id,  // Replace the author name with the author document ID
+        });
+
+        await newBook.save();
+    }
+
+    console.log('Data seeded successfully');
 }
+
+module.exports = { seedData }
