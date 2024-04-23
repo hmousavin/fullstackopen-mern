@@ -7,7 +7,9 @@ const { v1: uuid } = require('uuid');
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 const Author = require('./models/author')
-const Book = require('./models/book')
+const Book = require('./models/book');
+const { GraphQLError } = require('graphql');
+const book = require('./models/book');
 
 require('dotenv').config()
 
@@ -93,14 +95,24 @@ const resolvers = {
     addBook: async (root, args) => {
       const authorName = args.author.name;
       let author = await Author.findOne({ name: authorName });
-
-      if (!author) {
-        author = new Author({ name: authorName, id: uuid() });
-        await author.save();
-      }
       
-      const book = new Book({ ...args, author, id: uuid() });
-      await book.save();
+      try {
+          if (!author) {
+            author = new Author({ name: authorName, id: uuid() });
+            await author.save();
+          }
+
+          const book = new Book({ ...args, author, id: uuid() });
+          await book.save();
+        } catch (error) {
+          throw new GraphQLError(error.message, {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: book ? book.title : authorName,
+              error
+            }
+          })
+        }
 
       return book;
     },
