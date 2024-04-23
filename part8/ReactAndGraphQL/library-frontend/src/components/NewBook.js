@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { gql, useMutation } from '@apollo/client'
+import Notification from './Notification'
 
 const ADD_BOOK = gql`
   mutation($title: String!, $author: AuthorInput!, $published: Int!, $genres: [String!]!) {
@@ -13,28 +14,34 @@ const ADD_BOOK = gql`
     }
   }
 `
-
 const NewBook = (props) => {
   const [addBook] = useMutation(ADD_BOOK)
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [published, setPublished] = useState(undefined)
+  const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
+  const [notification, setNotification] = useState({message: '', type: 'unknown'})
 
   if (!props.show)
     return null
 
-  const submit = async (event) => {
+  const submit = (event) => {
     event.preventDefault()
 
-    addBook({variables: {title, author:{name: author}, published, genres} })
+    addBook({
+      variables: {title, author:{name: author}, published, genres}
+    }).then(() => {
+      setNotification({message: 'book created!', type: 'success'})
 
-    setTitle('')
-    setPublished('')
-    setAuthor('')
-    setGenres([])
-    setGenre('')
+      setTitle('')
+      setPublished('')
+      setAuthor('')
+      setGenres([])
+      setGenre('')
+    }).catch(
+      e => setNotification({message: e.message, type: 'failure'})
+    )
   }
 
   const addGenre = () => {
@@ -44,6 +51,7 @@ const NewBook = (props) => {
 
   return (
     <div>
+      <Notification message={notification.message} type={notification.type}/>
       <form onSubmit={submit}>
         <div>
           title
