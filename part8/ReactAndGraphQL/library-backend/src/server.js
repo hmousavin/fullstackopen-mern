@@ -8,8 +8,11 @@ const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 const Author = require('./models/author')
 const Book = require('./models/book');
+const User = require('./models/user')
 const { GraphQLError } = require('graphql');
-const book = require('./models/book');
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const saltRounds = 10;
 
 require('dotenv').config()
 
@@ -28,6 +31,16 @@ mongoose.connect(MONGODB_URI)
 seedData()
 
 const typeDefs = `
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+  
+  type Token {
+    value: String!
+  }
+
   type Book {
     title: String!,
     published: Int!,
@@ -46,7 +59,8 @@ const typeDefs = `
     bookCount: Int!,
     authorCount: Int!,
     allBooks(author: String, genre: String): [Book!]!,
-    allAuthors: [Author!]!    
+    allAuthors: [Author!]!,
+    me: User
   }
 
   input AuthorInput {
@@ -56,11 +70,16 @@ const typeDefs = `
   type Mutation {
     addBook(title: String!, author: AuthorInput!, published: Int!, genres: [String!]!): Book!
     setBirthYear(name: String!, born: Int!): Author!
+    createUser(username: String!, favoriteGenre: String!): User
+    login(username: String!, password: String!): Token
   }
 `;
 
 const resolvers = {
   Query: {
+    me: async() => {
+      // TODO3
+    },
     bookCount: async () => await Book.collection.countDocuments(),
     authorCount: async () => await Author.collection.countDocuments(),
     allBooks: async (parent, { author, genre }) => {
@@ -92,7 +111,11 @@ const resolvers = {
     }
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, context) => {
+      const currentUser = context.currentUser;
+      if (!currentUser)
+        throw new GraphQLError("not authenticated");
+
       const authorName = args.author.name;
       let author = await Author.findOne({ name: authorName });
       
@@ -116,7 +139,11 @@ const resolvers = {
 
       return book;
     },
-    setBirthYear: async (root, args) => {
+    setBirthYear: async (root, args, context) => {
+      const currentUser = context.currentUser;
+      if (!currentUser)
+        throw new GraphQLError("not authenticated");
+
       const author = {...args};
       const target = await Author.findOne({ name: author.name });
       if (target) {
@@ -128,6 +155,38 @@ const resolvers = {
         console.log(`target ${author} doesn't exist on ${authors}`);
         return null;
       }
+    },
+    createUser: async (root, args) => {
+      try {
+        const { username, favoriteGenre, password = '123' } = {...args} // suppose every password is 123! 
+        const passwordHash = await bcrypt.hash(password, saltRounds)
+        const user = new User({id: uuid(), username, passwordHash, favoriteGenre})
+        user.save()
+        
+        return user
+      } catch (error) {
+        throw new GraphQLError(error.message, {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args,
+            error
+          }
+        })
+      }
+    },
+    login: async (root, args) => {
+      const { username, password } = {...args}
+      const user = await User.findOne({ username })
+      const passwordIsCorrect = user === null
+        ? false
+        : await bcrypt.compare(password, user.passwordHash)        
+
+      if (user && passwordIsCorrect) {
+        const token = jwt.sign({ username, id: user._id }, process.env.SECRET)
+        return { value: token }
+      }
+      else 
+        return null
     }
   },
 };
@@ -135,6 +194,15 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+
+  context: async ({ req }) => {
+    const auth = req ? req.headers.authorization : null
+    if (auth && auth.toLowerCase().startsWith('bearer ')) {
+      const decodedToken = jwt.verify(auth.substring(7), process.env.SECRET)
+      const currentUser = await User.findById(decodedToken.id)
+      return { currentUser }
+    }
+  },
 
   csrfPrevention: false,
   plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
