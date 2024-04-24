@@ -77,12 +77,20 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    me: async() => {
-      // TODO3
+    me: async(root, args, context) => {
+      const currentUser = context.currentUser;
+      if (currentUser)
+        return currentUser
+      else
+        throw new GraphQLError("not authenticated");
     },
     bookCount: async () => await Book.collection.countDocuments(),
     authorCount: async () => await Author.collection.countDocuments(),
-    allBooks: async (parent, { author, genre }) => {
+    allBooks: async (parent, { author, genre }, context) => {
+      const currentUser = context.currentUser;
+      if (!currentUser)
+        throw new GraphQLError("not authenticated");
+
       let books = await Book.find({}).populate('author');
       return books.filter(
                     (b) =>
@@ -113,7 +121,9 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser;
-      if (!currentUser)
+      if (currentUser)
+        return currentUser
+      else
         throw new GraphQLError("not authenticated");
 
       const authorName = args.author.name;
