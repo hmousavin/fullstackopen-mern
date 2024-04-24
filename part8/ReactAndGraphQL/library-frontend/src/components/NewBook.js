@@ -51,7 +51,9 @@ const NewBook = (props) => {
 
   return (
     <div>
-      <Notification message={notification.message} type={notification.type}/>
+      <Notification 
+        key={new Date().valueOf()} // this id makes a new component, each time !
+        message={notification.message} type={notification.type}/>
       <form onSubmit={submit}>
         <div>
           title

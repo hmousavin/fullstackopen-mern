@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 const StyleType = {
     'unknown': {fontWeight: 'normal', color: 'black'},
-    'success': {fontWeight: 'bold', color: 'green'},
-    'failure': {fontWeight: 'bold', color: 'red'}
+    'success': {fontWeight: 'bold',   color: 'green'},
+    'failure': {fontWeight: 'bold',   color: 'red'}
 }
 const TimeoutDuration = {
     'unknown': 0,
@@ -12,8 +12,8 @@ const TimeoutDuration = {
 }
 
 const Notification = (props) => {
-    const { message, type } = props;
-    const [show, setShow] = useState(false);
+    const { message, type} = props;
+    const [ show, setShow ] = useState(true);
 
     const selectedStyle = () => {
         switch (type) {
@@ -29,7 +29,7 @@ const Notification = (props) => {
             const timer = setTimeout(() => setShow(false), TimeoutDuration[type]);
             return () => clearTimeout(timer);
         }
-    }, [type]);
+    }, [message, type]);
 
     return show ? <main style={selectedStyle()}>{message}</main> : null;
 }

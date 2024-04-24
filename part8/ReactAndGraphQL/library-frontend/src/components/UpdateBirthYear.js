@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { gql, useMutation } from '@apollo/client'
+import Notification from './Notification'
 
 const SET_DOB = gql`
     mutation($name: String!, $born: Int!) {
@@ -14,6 +15,7 @@ const UpdateBirthYear = (props) => {
     const [setDob] = useMutation(SET_DOB)
     const [authorName, setAuthorName] = useState()
     const [birthYear, setBirthYear] = useState()
+    const [notification, setNotification] = useState({message: '', type: 'unknown'})
 
     const onChangeSelctedAuthor = (e) => {
         const index = Number(e.target.value)
@@ -27,7 +29,11 @@ const UpdateBirthYear = (props) => {
     }
 
     const onUpdateBirthYear = (e) => {
-        setDob({variables: {name: authorName, born: birthYear}})
+        setDob({variables: {name: authorName, born: birthYear}}).then(() => {
+            setNotification({message: 'birth year updated!', type: 'success'})
+        }).catch(
+            e => setNotification({message: e.message, type: 'failure'})
+        )
     }
 
     if (!props)
@@ -36,6 +42,9 @@ const UpdateBirthYear = (props) => {
     return (
         <main>
             <h2>Set birthdate</h2>
+            <Notification 
+                key={new Date().valueOf()} // this id makes a new component, each time !
+                message={notification.message} type={notification.type}/>
             <div>
                 <label>name</label>
                 <select onChange={e => onChangeSelctedAuthor(e)}>
