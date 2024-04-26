@@ -1,19 +1,8 @@
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { useState, useEffect } from 'react'
 import Notification from './Notification'
+import { ALL_BOOKS } from '../queries'
 
-const ALL_BOOKS = gql`
-  query {
-    allBooks {
-      title
-      published
-      genres
-      author {
-        name
-      }
-    }
-  } 
-`
 const Books = (props) => {
   const result = useQuery(ALL_BOOKS)
   const [notification, setNotification] = useState({message: '', type: 'unknown'})

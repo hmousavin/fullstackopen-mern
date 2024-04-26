@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
@@ -12,12 +12,13 @@ const App = () => {
   const [notification, setNotification] = useState({message: '', type: 'unknown'})
   const client = useApolloClient()
 
-  const logout = () => {
-    setToken(null)
-    localStorage.clear()
-    client.resetStore()
-  }
-
+  useEffect(() => {
+    const userFromStorage = localStorage.getItem('library-user-token');
+    if (userFromStorage) {
+      setToken(userFromStorage);
+    }
+  }, []);
+  
   if (!token) {
     return (
       <div>
@@ -31,9 +32,16 @@ const App = () => {
     )
   }
 
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+  }
+
   return (
     <div>
       <Notification message={notification.message} type={'failure'} />
+      
       <button onClick={logout}>logout</button>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>

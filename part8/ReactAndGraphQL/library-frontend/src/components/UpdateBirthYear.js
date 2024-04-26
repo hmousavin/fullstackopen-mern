@@ -1,15 +1,7 @@
 import { useState } from "react"
-import { gql, useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import Notification from './Notification'
-
-const SET_DOB = gql`
-    mutation($name: String!, $born: Int!) {
-    setBirthYear(name: $name, born: $born) {
-      name
-      born
-    }
-  }
-`
+import { SET_DOB } from "../queries"
 
 const UpdateBirthYear = (props) => {
     const [setDob] = useMutation(SET_DOB)

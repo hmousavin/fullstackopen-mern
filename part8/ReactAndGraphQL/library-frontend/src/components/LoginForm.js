@@ -13,12 +13,12 @@ const LoginForm = ({ setError, setToken }) => {
   })
 
   useEffect(() => {
-    if ( result.data ) {
+    if (result.data) {
       const token = result.data.login.value
       setToken(token)
       localStorage.setItem('library-user-token', token)
     }
-  }, [result.data])
+  }, [result.data, setToken])
 
   const submit = async (event) => {
     event.preventDefault()
