@@ -121,9 +121,7 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser;
-      if (currentUser)
-        return currentUser
-      else
+      if (!currentUser)
         throw new GraphQLError("not authenticated");
 
       const authorName = args.author.name;
@@ -205,6 +203,13 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
 
+  csrfPrevention: false,
+  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
+});
+
+startStandaloneServer(server, {
+  listen: { port: 4000 },
+
   context: async ({ req }) => {
     const auth = req ? req.headers.authorization : null
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
@@ -213,13 +218,6 @@ const server = new ApolloServer({
       return { currentUser }
     }
   },
-
-  csrfPrevention: false,
-  plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
-});
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`);
 });
