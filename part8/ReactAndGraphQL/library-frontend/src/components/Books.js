@@ -1,19 +1,25 @@
 import { useQuery } from '@apollo/client'
 import { useState, useEffect } from 'react'
 import Notification from './Notification'
-import { ALL_BOOKS } from '../queries'
+import { ALL_BOOKS_BY_GENRE } from '../queries'
+import BookByGenres from './BookByGenres'
 
 const Books = (props) => {
-  const result = useQuery(ALL_BOOKS)
+  const [genre, setGenre] = useState()
+  const booksByGenreQuery = useQuery(ALL_BOOKS_BY_GENRE, { variables: { genre: genre || '' }})
   const [notification, setNotification] = useState({message: '', type: 'unknown'})
 
   useEffect(() => {
-    if (result.error) 
-      setNotification({message: result.error.message, type: 'failure'})
-  }, [result.error])
+    if (booksByGenreQuery.error) 
+      setNotification({message: booksByGenreQuery.error.message, type: 'failure'})
+  }, [booksByGenreQuery.error])
   
   if (!props.show)
     return null
+  else if (booksByGenreQuery.loading)
+    return <div>loading...</div>
+
+  const {allBooksByGenre} = booksByGenreQuery.data
 
   return (
     <div>
@@ -21,8 +27,8 @@ const Books = (props) => {
       <Notification 
         key={new Date().valueOf()} // this id makes a new component, each time !
         message={notification.message} type={notification.type}/>
-      {result.loading ? <div>loading...</div> : 
-      result.error ? <div></div> :
+      {booksByGenreQuery.loading ? <div>loading...</div> : 
+      booksByGenreQuery.error ? <div></div> :
       <table>
         <tbody>
           <tr>
@@ -30,15 +36,17 @@ const Books = (props) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {result.data.allBooks.map((a) => (
-            <tr key={a.title}>
-              <td>{a.title}</td>
-              <td>{a.author.name}</td>
-              <td>{a.published}</td>
-            </tr>
-          ))}
+          {allBooksByGenre.map((a) => (
+                                <tr key={a.title}>
+                                  <td>{a.title}</td>
+                                  <td>{a.author.name}</td>
+                                  <td>{a.published}</td>
+                                </tr>
+                              ))
+          }
         </tbody>
       </table>}
+      <BookByGenres setGenre={setGenre}/>
     </div>
   )
 }

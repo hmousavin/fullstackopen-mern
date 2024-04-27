@@ -5,6 +5,7 @@ import NewBook from './components/NewBook'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import { useApolloClient } from '@apollo/client'
+import Recommended from './components/Recommended'
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -42,11 +43,13 @@ const App = () => {
     <div>
       <Notification message={notification.message} type={'failure'} />
       
-      <button onClick={logout}>logout</button>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         <button onClick={() => setPage('add')}>add book</button>
+        <button onClick={() => setPage('recommended')}>recommended</button>
+
+        <button onClick={logout}>logout</button>
       </div>
 
       <Authors show={page === 'authors'} />
@@ -54,6 +57,8 @@ const App = () => {
       <Books show={page === 'books'} />
 
       <NewBook show={page === 'add'} />
+
+      <Recommended show={page === 'recommended'} />
     </div>
   )
 }
