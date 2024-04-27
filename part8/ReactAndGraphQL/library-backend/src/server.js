@@ -59,6 +59,8 @@ const typeDefs = `
     bookCount: Int!,
     authorCount: Int!,
     allBooks(author: String, genre: String): [Book!]!,
+    allGenres: [String!]!,
+    allBooksByGenre(genre: String): [Book!]!,
     allAuthors: [Author!]!,
     me: User
   }
@@ -101,6 +103,33 @@ const resolvers = {
                     return {
                       title: b.title,
                       author: b.author, // this is now the populated author document
+                      published: b.published,
+                      genres: b.genres,
+                    };
+                  });
+    },
+    allGenres: async(parent, {}, context) => {
+      const currentUser = context.currentUser;
+      if (!currentUser)
+        throw new GraphQLError("not authenticated");
+
+      const allBooks = await Book.find({})
+      return new Set(allBooks.map(b => b.genres).flat())
+    },
+    allBooksByGenre: async (parent, { genre }, context) => {
+      const currentUser = context.currentUser;
+      if (!currentUser)
+        throw new GraphQLError("not authenticated");
+
+      let books = await Book.find({}).populate('author');
+      return books.filter(
+                    (b) =>
+                    (!genre || b.genres.includes(genre.toLowerCase()))
+                  )
+                  .map((b) => {
+                    return {
+                      title: b.title,
+                      author: b.author, // the populated
                       published: b.published,
                       genres: b.genres,
                     };
