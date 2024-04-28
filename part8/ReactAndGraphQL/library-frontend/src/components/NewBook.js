@@ -4,7 +4,11 @@ import Notification from './Notification'
 import { ADD_BOOK } from '../queries'
 
 const NewBook = (props) => {
-  const [addBook] = useMutation(ADD_BOOK)
+  const [addBook] = useMutation(ADD_BOOK, {
+    onError: (error) => {
+      setNotification({message: error.graphQLErrors[0].message, type: 'failure'})
+    }
+  })
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [published, setPublished] = useState('')

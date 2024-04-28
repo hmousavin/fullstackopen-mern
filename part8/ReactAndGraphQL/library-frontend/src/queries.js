@@ -7,6 +7,13 @@ export const LOGIN = gql`
     }
   }
 `
+export const ME = gql`
+  query {
+    me {
+      username
+    }
+  }
+`
 export const ALL_AUTHORS = gql`
   query {
     allAuthors {
@@ -63,14 +70,6 @@ export const SET_DOB = gql`
     }
   }
 `
-export const ME = gql`
-  query {
-    me {
-      username
-    }
-  }
-`
-
 export const MY_FAVORITE_GENRE = gql`
   query {
     me {

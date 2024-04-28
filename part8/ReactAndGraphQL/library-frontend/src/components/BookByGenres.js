@@ -3,7 +3,7 @@ import { ALL_GENRES } from '../queries'
 
 const BookByGenres = (props) => {
     const allGenresQuery = useQuery(ALL_GENRES)
-    const {setGenre} = props
+    const {genre, setGenre} = props
 
     if (!allGenresQuery)
         return null
@@ -19,7 +19,7 @@ const BookByGenres = (props) => {
     return <main>
             {allGenres.map((g,i) => (
                 <span key={`span-rb${i}`}>
-                    <input id={`rb${i}`} key={`rb${i}`} type='radio' name='genres' value={i} onClick={onChangeGenre}/>
+                    <input id={`rb${i}`} key={`rb${i}`} type='radio' name='genres' value={i} checked={genre===allGenres[i]} onChange={onChangeGenre}/>
                     <label htmlFor={`rb${i}`}>{g}</label>
                 </span>
             ))}

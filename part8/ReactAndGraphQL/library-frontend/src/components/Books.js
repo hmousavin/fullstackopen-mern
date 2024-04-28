@@ -6,13 +6,22 @@ import BookByGenres from './BookByGenres'
 
 const Books = (props) => {
   const [genre, setGenre] = useState()
-  const booksByGenreQuery = useQuery(ALL_BOOKS_BY_GENRE, { variables: { genre: genre || '' }})
+  const booksByGenreQuery = useQuery(ALL_BOOKS_BY_GENRE, { 
+    variables: { genre: genre || '' }
+  })
   const [notification, setNotification] = useState({message: '', type: 'unknown'})
 
   useEffect(() => {
+    setGenre(null)
     if (booksByGenreQuery.error) 
       setNotification({message: booksByGenreQuery.error.message, type: 'failure'})
-  }, [booksByGenreQuery.error])
+  }, [props, booksByGenreQuery.error])
+
+  useEffect(() => {
+    if (genre) {
+      booksByGenreQuery.refetch({ genre: genre })
+    }
+  }, [genre, booksByGenreQuery])
   
   if (!props.show)
     return null
@@ -46,7 +55,7 @@ const Books = (props) => {
           }
         </tbody>
       </table>}
-      <BookByGenres setGenre={setGenre}/>
+      <BookByGenres genre={genre} setGenre={setGenre} />
     </div>
   )
 }
