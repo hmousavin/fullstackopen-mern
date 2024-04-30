@@ -64,32 +64,32 @@ Part 8: GraphQL
 + [Login and updating the cache]
 + [Fragments and subscriptions]
 
-Part 9: TypeScript
+~~Part 9: TypeScript~~ Not done yet!
 + [Background and introduction]
 + [First steps with TypeScript]
 + [Typing an Express app]
 + [React with types]
 + [Grande finale: Patientor]
 
-Part 10: React Native
+~~Part 10: React Native~~ Not done yet!
 + [Introduction to React Native]
 + [React Native basics]
 + [Communicating with server]
 + [Testing and extending our application]
 
-Part 11: CI/CD
+~~Part 11: CI/CD~~ Not done yet!
 + [Introduction to CI/CD]
 + [Getting started with GitHub Actions]
 + [Deployment]
 + [Keeping green]
 + [Expanding Further]
 
-Part 12: Containers
+~~Part 12: Containers~~ Not done yet!
 + [Introduction to Containers]
 + [Building and configuring environments]
 + [Basics of Orchestration]
 
-Part 13: Using relational databases
+~~Part 13: Using relational databases~~ Not done yet!
 + [Using relational databases with Sequelize]
 + [Join tables and queries]
 + [Migrations, many-to-many relationships]
