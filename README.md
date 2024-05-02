@@ -64,7 +64,7 @@ Part 8: GraphQL
 + [Login and updating the cache]
 + [Fragments and subscriptions]
 
-~~Part 9: TypeScript~~ Not done yet!
+Part 9: TypeScript
 + [Background and introduction]
 + [First steps with TypeScript]
 + [Typing an Express app]
