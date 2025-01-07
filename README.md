@@ -1,8 +1,10 @@
-The Full Stack Open course is a comprehensive exploration of the MERN stack (MongoDB, Express.js, React.js, Node.js) in modern web application development. The course provides a balanced mix of theory and practical exercises to ensure a thorough understanding of each lesson. It places a strong emphasis on ES6 features and other useful JavaScript techniques.
+The Full Stack Open course is a comprehensive exploration of the **MERN stack (MongoDB, Express.js, React.js, Node.js)** in modern web application development. The course provides a balanced mix of theory and practical exercises to ensure a thorough understanding of each lesson. It places a strong emphasis on **ES6** features and other useful **JavaScript** techniques.
 
-The course guides you through the creation of single-page applications with ReactJS that interact with REST APIs developed with Node.js. It also introduces GraphQL, a cutting-edge alternative to REST APIs. The course covers various types of testing including end-to-end testing and integration testing to ensure the robustness of the applications.
+The course guides you through the creation of single-page applications with **ReactJS** that interact with **REST APIs** developed with **Node.js**. It also introduces **GraphQL**, a cutting-edge alternative to **REST APIs**. The course covers various types of testing including **end-to-end** testing and **integration testing** to ensure the robustness of the applications.
 
-The course also delves into both NoSQL and relational databases, with practical use of MongoDB and PostgreSQL. It encompasses various aspects of web development, including testing, environment setup, and database management. This course is a great way to get hands-on experience with the full stack of web development technologies.
+The course also delves into both **NoSQL** and relational databases, with practical use of **MongoDB** and **PostgreSQL**. Additionally, it incorporates **containerization** concepts, using **Docker** for creating reproducible development environments, managing dependencies, and ensuring seamless deployment.
+
+It encompasses various aspects of web development, including testing, environment setup, database management, and containerized workflows. This course is a great way to get hands-on experience with the full stack of web development technologies.
 
 So, this project covers: 
 
@@ -84,7 +86,7 @@ Part 9: TypeScript
 + [Keeping green]
 + [Expanding Further]
 
-~~Part 12: Containers~~ Not done yet!
+Part 12: Containers
 + [Introduction to Containers]
 + [Building and configuring environments]
 + [Basics of Orchestration]
