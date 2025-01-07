@@ -1,9 +1,0 @@
-sudo docker run --name my-ubu-3 my-ubu:2.0 sh -c "
-   apt-get update &&
-   apt-get install -y curl && 
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash &&
-   echo 'export NVM_DIR=\"$HOME/.nvm\"' >> /root/.bashrc &&
-   . /root/.bashrc &&
-   nvm install 22 &&
-   node /usr/src/app/index.js
-" && sudo docker commit --change='CMD [\"sh\"]' my-ubu-3 my-ubu:3.0
