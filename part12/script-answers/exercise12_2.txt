@@ -1,0 +1,1 @@
+sudo docker run -it --name my-ubu ubuntu:24.04 sh -c "script -q -c 'mkdir -p /usr/src/app && touch /usr/src/app/index.js' /dev/null && exit" && sudo docker commit --change='CMD ["sh"]' my-ubu my-ubu:1.0

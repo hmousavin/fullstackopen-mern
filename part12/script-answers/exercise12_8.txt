@@ -1,0 +1,8 @@
+sudo docker compose -f docker-compose.dev.yml up -d
+sudo docker exec -it todo-backend-mongo-1 bash
+mongosh mongodb://root:123@localhost:27017/todos
+show dbs
+show collections
+db.todos.find({})
+db.todos.insert.insert({text: 'Increase the number of tools in my tool belt', done: false})
+db.todos.find({})

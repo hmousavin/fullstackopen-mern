@@ -1,0 +1,4 @@
+sudo docker exec -it todo-backend-redis-1 bash 
+get todos 
+redis-cli set todos 9001 
+redis-cli del todos 
